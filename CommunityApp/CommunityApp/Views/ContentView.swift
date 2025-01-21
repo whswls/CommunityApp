@@ -61,9 +61,9 @@ struct ContentView: View {
             .background(Color.mint.opacity(0.5))
             .clipShape(RoundedRectangle(cornerRadius: 15))
             
-            Button(action: {}, label: {
+            NavigationLink(destination: SignUpView()) {
                 Text("아직 회원이 아니신가요?")
-            })
+            }
             .font(.system(size: 17, weight: .bold))
             .foregroundStyle(.mint)
             .padding(.trailing, 120)
