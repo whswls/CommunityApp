@@ -6,8 +6,12 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct SignUpView: View {
+    // 영구 저장할 데이터를 저장할 프로퍼티
+    @Environment(\.modelContext) private var modelContext
+    @Query var members: [Member]
     
     @State var id: String = ""
     @State var password: String = ""
@@ -55,6 +59,7 @@ struct SignUpView: View {
                         }
                     }
                     .frame(width: 210, height: 40)
+                    
                     Button(action: {
                         self.showPassword.toggle()
                     }, label: {
@@ -75,7 +80,7 @@ struct SignUpView: View {
                 Text("비밀번호 재확인")
                 HStack {
                     Section {
-                        if showPassword {
+                        if showRePassword {
                             TextField("", text: $rePassword)
                         } else {
                             SecureField("", text: $rePassword)
@@ -107,6 +112,7 @@ struct SignUpView: View {
                         RoundedRectangle(cornerRadius: 13)
                             .stroke(Color.mint, lineWidth: 1)
                     }
+                    
             }
             .frame(width: 270, height: 35, alignment: .leading)
             
@@ -136,6 +142,15 @@ struct SignUpView: View {
             .clipShape(RoundedRectangle(cornerRadius: 15))
             Spacer()
         }
+        .ignoresSafeArea(.keyboard) // 키보드가 화면을 밀어내지 않도록 설정
+        .autocorrectionDisabled(true) // 자동완성 비활성화
+        .textInputAutocapitalization(.never) // 대문자 자동 변환 방지
+    }
+    
+    // 회원 가입
+    func addMember() {
+        let member = Member(id: id, password: password, nickname: nickname, selectedDate: selectedDate)
+        modelContext.insert(member)
     }
 }
 
