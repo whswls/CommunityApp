@@ -15,10 +15,12 @@ final class Member {
     var password: String = ""
     @Attribute(.unique)
     var nickname: String = ""
+    var selectedDate: Date = Date()
     
-    init(id: String, password: String, nickname: String) {
+    init(id: String, password: String, nickname: String, selectedDate: Date) {
         self.id = id
         self.password = password
         self.nickname = nickname
+        self.selectedDate = selectedDate
     }
 }
