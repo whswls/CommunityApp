@@ -6,12 +6,8 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct SignUpView: View {
-    // 영구 저장할 데이터를 저장할 프로퍼티
-    @Environment(\.modelContext) private var modelContext
-    @Query var members: [Member]
     
     @State var id: String = ""
     @State var password: String = ""
@@ -20,10 +16,12 @@ struct SignUpView: View {
     @State var showPassword: Bool = false
     @State var showRePassword: Bool = false
     @State var selectedDate: Date = Date()
-    
     @State private var isSignedUp: Bool = false
     
-    // 날짜 범위 지정
+    @State var members: [Member] = []
+    let supabase = Supabase.shared.client
+    
+    //날짜 범위 지정
     var dateRange: ClosedRange<Date> {
         let min = Calendar.current.date(byAdding: .year, value: -110, to: selectedDate)!
         let max = Calendar.current.date(byAdding: .year, value: 1, to: selectedDate)!
@@ -134,8 +132,10 @@ struct SignUpView: View {
                 Spacer()
                 
                 Button (action: {
-                    addMember()
-                    isSignedUp = true
+                    Task{
+                        await addMember()
+                        isSignedUp = true
+                    }
                 }, label: {
                     Text("회원 가입")
                 })
@@ -157,9 +157,17 @@ struct SignUpView: View {
     }
     
     // 회원 가입
-    func addMember() {
-        let member = Member(id: id, password: password, nickname: nickname, selectedDate: selectedDate)
-        modelContext.insert(member)
+    func addMember() async {
+        let member = Member(id: id, nickname: nickname, password: password, date: selectedDate)
+        do {
+            try await supabase
+                .from("member")
+                .insert(member)
+                .execute()
+            print("회원 가입 성공!")
+        } catch {
+            print("회원 가입 실패: \(error.localizedDescription)")
+        }
     }
 }
 
