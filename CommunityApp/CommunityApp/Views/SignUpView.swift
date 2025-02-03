@@ -9,27 +9,7 @@ import SwiftUI
 
 struct SignUpView: View {
     
-    @State private var id: String = ""
-    @State private var password: String = ""
-    @State private var rePassword: String = ""
-    @State private var nickname: String = ""
-    @State private var showPassword: Bool = false
-    @State private var showRePassword: Bool = false
-    @State private var selectedDate: Date = Date()
-    @State private var isSignedUp: Bool = false
-    @State private var validPassword: Bool = false
-    @State private var validate: Bool = false
-    
-    @State var members: [Member] = []
-    let supabase = Supabase.shared.client
-    
-    // 날짜 범위 지정
-    var dateRange: ClosedRange<Date> {
-        let min = Calendar.current.date(byAdding: .year, value: -110, to: selectedDate)!
-        let max = Calendar.current.date(byAdding: .year, value: -1, to: selectedDate)!
-        
-        return min...max
-    }
+    @StateObject private var viewModel = SignUpViewModel()
     
     var body: some View {
         NavigationStack {
@@ -39,18 +19,25 @@ struct SignUpView: View {
                     .font(.system(size: 27, weight: .bold))
                     .padding()
                 Spacer()
-                InputFieldView(title: "아이디", text: $id)
-                PasswordInputFieldView(title: "비밀번호", password: $password, showPassword: $showPassword)
-                    .onChange(of: password) { validatePassword() }
-                PasswordInputFieldView(title: "비밀번호 재확인", password: $rePassword, showPassword: $showRePassword)
-                    .onChange(of: rePassword) { validatePassword() }
-                InputFieldView(title: "닉네임", text: $nickname)
+                Button (action: {
+                    Task{
+                        await viewModel.loadData()
+                    }
+                }, label: {
+                    Text("중복 확인")
+                })
+                InputFieldView(title: "아이디", text: $viewModel.id)
+                PasswordInputFieldView(title: "비밀번호", password: $viewModel.password, showPassword: $viewModel.showPassword)
+                    .onChange(of: viewModel.password) { viewModel.validatePassword() }
+                PasswordInputFieldView(title: "비밀번호 재확인", password: $viewModel.rePassword, showPassword: $viewModel.showRePassword)
+                    .onChange(of: viewModel.rePassword) { viewModel.validatePassword() }
+                InputFieldView(title: "닉네임", text: $viewModel.nickname)
                 
                 Section {
                     Text("생년월일")
                     DatePicker("",
-                               selection: $selectedDate,
-                               in: dateRange,
+                               selection: $viewModel.selectedDate,
+                               in: viewModel.dateRange,
                                displayedComponents: [.date]
                     )
                     .frame(width: 95)
@@ -62,8 +49,7 @@ struct SignUpView: View {
                 
                 Button (action: {
                     Task{
-                        await addMember()
-                        isSignedUp = true
+                        await viewModel.addMember()
                     }
                 }, label: {
                     Text("회원 가입")
@@ -71,46 +57,18 @@ struct SignUpView: View {
                 .font(.system(size: 18, weight: .bold))
                 .foregroundStyle(.white)
                 .frame(width: 270, height: 40)
-                .background(!isValid() ? Color.mint.opacity(0.4) : Color.mint.opacity(0.7))
+                .background(!viewModel.isValid() ? Color.mint.opacity(0.4) : Color.mint.opacity(0.7))
                 .clipShape(RoundedRectangle(cornerRadius: 15))
-                .disabled(!validPassword)
+                .disabled(!viewModel.validPassword)
                 Spacer()
             }
             .ignoresSafeArea(.keyboard) // 키보드가 화면을 밀어내지 않도록 설정
             .autocorrectionDisabled(true) // 자동완성 비활성화
             .textInputAutocapitalization(.never) // 대문자 자동 변환 방지
         }
-        .navigationDestination(isPresented: $isSignedUp) {
+        .navigationDestination(isPresented: $viewModel.isSignedUp) {
             ContentView()
         }
-    }
-    
-    // 회원 가입
-    private func addMember() async {
-        let member = Member(id: id, nickname: nickname, password: password, date: selectedDate)
-        do {
-            try await supabase
-                .from("member")
-                .insert(member)
-                .execute()
-            print("회원 가입 성공!")
-        } catch {
-            print("회원 가입 실패: \(error.localizedDescription)")
-        }
-    }
-    
-    // 비밀번호 유효성 검사
-    private func validatePassword() {
-        if password != rePassword {
-            validPassword = false
-        } else {
-            validPassword = true
-        }
-    }
-    
-    // 비밀번호 일치하는지, 필수 필드가 채워져있는지 검사
-    private func isValid() -> Bool {
-        return validPassword && !id.isEmpty && !nickname.isEmpty
     }
 }
 
