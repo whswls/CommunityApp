@@ -9,15 +9,16 @@ import SwiftUI
 
 struct SignUpView: View {
     
-    @State var id: String = ""
-    @State var password: String = ""
-    @State var rePassword: String = ""
-    @State var nickname: String = ""
-    @State var showPassword: Bool = false
-    @State var showRePassword: Bool = false
-    @State var selectedDate: Date = Date()
+    @State private var id: String = ""
+    @State private var password: String = ""
+    @State private var rePassword: String = ""
+    @State private var nickname: String = ""
+    @State private var showPassword: Bool = false
+    @State private var showRePassword: Bool = false
+    @State private var selectedDate: Date = Date()
     @State private var isSignedUp: Bool = false
-    @State var validPassword: Bool = false
+    @State private var validPassword: Bool = false
+    @State private var validate: Bool = false
     
     @State var members: [Member] = []
     let supabase = Supabase.shared.client
@@ -25,7 +26,7 @@ struct SignUpView: View {
     //날짜 범위 지정
     var dateRange: ClosedRange<Date> {
         let min = Calendar.current.date(byAdding: .year, value: -110, to: selectedDate)!
-        let max = Calendar.current.date(byAdding: .year, value: 1, to: selectedDate)!
+        let max = Calendar.current.date(byAdding: .year, value: -1, to: selectedDate)!
         
         return min...max
     }
@@ -39,7 +40,13 @@ struct SignUpView: View {
                     .padding()
                 Spacer()
                 Section {
-                    Text("아이디")
+                    HStack {
+                        Text("아이디")
+                        Text("*")
+                            .font(.system(size: 24))
+                            .foregroundStyle(.red)
+                            .offset(x: -7)
+                    }
                     TextField("", text: $id)
                         .padding(.leading, 13)
                         .frame(width: 270, height: 40)
@@ -51,7 +58,13 @@ struct SignUpView: View {
                 .frame(width: 270, height: 35, alignment: .leading)
                 
                 Section {
-                    Text("비밀번호")
+                    HStack {
+                        Text("비밀번호")
+                        Text("*")
+                            .font(.system(size: 24))
+                            .foregroundStyle(.red)
+                            .offset(x: -7)
+                    }
                     HStack {
                         Section {
                             if showPassword {
@@ -80,7 +93,13 @@ struct SignUpView: View {
                 .frame(width: 275, height: 40, alignment: .leading)
                 
                 Section {
-                    Text("비밀번호 재확인")
+                    HStack {
+                        Text("비밀번호 재확인")
+                        Text("*")
+                            .font(.system(size: 24))
+                            .foregroundStyle(.red)
+                            .offset(x: -7)
+                    }
                     HStack {
                         Section {
                             if showRePassword {
@@ -108,7 +127,13 @@ struct SignUpView: View {
                 .frame(width: 275, height: 40, alignment: .leading)
                 
                 Section {
-                    Text("닉네임")
+                    HStack {
+                        Text("닉네임")
+                        Text("*")
+                            .font(.system(size: 24))
+                            .foregroundStyle(.red)
+                            .offset(x: -7)
+                    }
                     TextField("", text: $nickname)
                         .padding(.leading, 13)
                         .frame(width: 270, height: 40)
@@ -145,7 +170,7 @@ struct SignUpView: View {
                 .font(.system(size: 18, weight: .bold))
                 .foregroundStyle(.white)
                 .frame(width: 270, height: 40)
-                .background(Color.mint.opacity(0.7))
+                .background(!isValid() ? Color.mint.opacity(0.4) : Color.mint.opacity(0.7))
                 .clipShape(RoundedRectangle(cornerRadius: 15))
                 .disabled(!validPassword)
                 Spacer()
@@ -157,11 +182,10 @@ struct SignUpView: View {
         .navigationDestination(isPresented: $isSignedUp) {
             ContentView()
         }
-        
     }
     
     // 회원 가입
-    func addMember() async {
+    private func addMember() async {
         let member = Member(id: id, nickname: nickname, password: password, date: selectedDate)
         do {
             try await supabase
@@ -175,12 +199,17 @@ struct SignUpView: View {
     }
     
     // 비밀번호 유효성 검사
-    func validatePassword() {
+    private func validatePassword() {
         if password != rePassword {
             validPassword = false
-        }else {
+        } else {
             validPassword = true
         }
+    }
+    
+    // 비밀번호 일치하는지, 필수 필드가 채워져있는지 검사
+    private func isValid() -> Bool {
+        return validPassword && !id.isEmpty && !nickname.isEmpty
     }
 }
 
