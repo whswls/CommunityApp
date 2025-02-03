@@ -17,6 +17,7 @@ struct SignUpView: View {
     @State var showRePassword: Bool = false
     @State var selectedDate: Date = Date()
     @State private var isSignedUp: Bool = false
+    @State var validPassword: Bool = false
     
     @State var members: [Member] = []
     let supabase = Supabase.shared.client
@@ -60,6 +61,7 @@ struct SignUpView: View {
                             }
                         }
                         .frame(width: 210, height: 40)
+                        .onChange(of: password) { validatePassword() }
                         
                         Button(action: {
                             self.showPassword.toggle()
@@ -88,6 +90,7 @@ struct SignUpView: View {
                             }
                         }
                         .frame(width: 210, height: 40)
+                        .onChange(of: rePassword) { validatePassword() }
                         Button(action: {
                             self.showRePassword.toggle()
                         }, label: {
@@ -144,6 +147,7 @@ struct SignUpView: View {
                 .frame(width: 270, height: 40)
                 .background(Color.mint.opacity(0.7))
                 .clipShape(RoundedRectangle(cornerRadius: 15))
+                .disabled(!validPassword)
                 Spacer()
             }
             .ignoresSafeArea(.keyboard) // 키보드가 화면을 밀어내지 않도록 설정
@@ -167,6 +171,15 @@ struct SignUpView: View {
             print("회원 가입 성공!")
         } catch {
             print("회원 가입 실패: \(error.localizedDescription)")
+        }
+    }
+    
+    // 비밀번호 유효성 검사
+    func validatePassword() {
+        if password != rePassword {
+            validPassword = false
+        }else {
+            validPassword = true
         }
     }
 }
