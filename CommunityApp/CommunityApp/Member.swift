@@ -6,21 +6,18 @@
 //
 
 import Foundation
-import SwiftData
+import Supabase
 
-@Model
-final class Member {
-    @Attribute(.unique)
-    var id: String = ""
-    var password: String = ""
-    @Attribute(.unique)
-    var nickname: String = ""
-    var selectedDate: Date = Date()
+struct Member: Codable, Identifiable {
+    var id: String
+    var nickname: String
+    var password: String
+    var date: Date?
     
-    init(id: String, password: String, nickname: String, selectedDate: Date) {
+    init(id: String, nickname: String, password: String, date: Date?) {
         self.id = id
-        self.password = password
         self.nickname = nickname
-        self.selectedDate = selectedDate
+        self.password = password
+        self.date = date
     }
 }

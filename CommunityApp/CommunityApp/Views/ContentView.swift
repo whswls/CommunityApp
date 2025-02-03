@@ -92,5 +92,4 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: Member.self, inMemory: true)
 }
