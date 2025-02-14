@@ -19,14 +19,7 @@ struct SignUpView: View {
                     .font(.system(size: 27, weight: .bold))
                     .padding()
                 Spacer()
-                Button (action: {
-                    Task{
-                        await viewModel.loadData()
-                    }
-                }, label: {
-                    Text("중복 확인")
-                })
-                InputFieldView(title: "아이디", text: $viewModel.id)
+                InputFieldView(title: "이메일", text: $viewModel.email)
                 PasswordInputFieldView(title: "비밀번호", password: $viewModel.password, showPassword: $viewModel.showPassword)
                     .onChange(of: viewModel.password) { viewModel.validatePassword() }
                 PasswordInputFieldView(title: "비밀번호 재확인", password: $viewModel.rePassword, showPassword: $viewModel.showRePassword)

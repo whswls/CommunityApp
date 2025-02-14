@@ -11,7 +11,7 @@ import Combine
 @Observable
 class SignUpViewModel {
     // 사용자 입력
-    var id: String = ""
+    var email: String = ""
     var password: String = ""
     var rePassword: String = ""
     var showPassword: Bool = false
@@ -44,7 +44,7 @@ class SignUpViewModel {
     
     // 비밀번호 일치하는지, 필수 필드가 채워져있는지 검사
     func isValid() -> Bool {
-        return validPassword && !id.isEmpty && !nickname.isEmpty
+        return validPassword && !email.isEmpty && !nickname.isEmpty
     }
     
     // 데이터 불러오기
@@ -86,7 +86,7 @@ class SignUpViewModel {
     // 회원 가입
     @MainActor
     func addMember() async {
-        let member = Member(id: id, nickname: nickname, password: password, date: selectedDate)
+        let member = Member(email: email, nickname: nickname, password: password, date: selectedDate)
         do {
             try await supabase
                 .from("member")
