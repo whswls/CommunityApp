@@ -6,23 +6,23 @@
 //
 
 import Foundation
-//import Supabase
 import Combine
 
-class SignUpViewModel: ObservableObject {
+@Observable
+class SignUpViewModel {
     // 사용자 입력
-    @Published var id: String = ""
-    @Published var password: String = ""
-    @Published var rePassword: String = ""
-    @Published var showPassword: Bool = false
-    @Published var showRePassword: Bool = false
-    @Published var nickname: String = ""
-    @Published var selectedDate: Date = Date()
+    var id: String = ""
+    var password: String = ""
+    var rePassword: String = ""
+    var showPassword: Bool = false
+    var showRePassword: Bool = false
+    var nickname: String = ""
+    var selectedDate: Date = Date()
     
     // UI 상태
-    @Published var validPassword: Bool = false
-    @Published var isSignedUp: Bool = false
-    @Published var members: [Member] = []
+    var validPassword: Bool = false
+    var isSignedUp: Bool = false
+    var members: [Member] = []
     
     private let supabase = Supabase.shared.client
     
@@ -64,7 +64,6 @@ class SignUpViewModel: ObservableObject {
                 // jsonData가 [[String: Any]] 형태로 변환되었을 경우 처리
                 print("response JSON: \(jsonData)")
 
-                // 데이터가 비어있는지 체크
                 if jsonData.isEmpty {
                     print("데이터가 없습니다.")
                 } else {
@@ -85,6 +84,7 @@ class SignUpViewModel: ObservableObject {
     }
     
     // 회원 가입
+    @MainActor
     func addMember() async {
         let member = Member(id: id, nickname: nickname, password: password, date: selectedDate)
         do {
@@ -92,7 +92,7 @@ class SignUpViewModel: ObservableObject {
                 .from("member")
                 .insert(member)
                 .execute()
-            isSignedUp = true
+                isSignedUp = true
             print("회원 가입 성공!")
         } catch {
             print("회원 가입 실패: \(error.localizedDescription)")
